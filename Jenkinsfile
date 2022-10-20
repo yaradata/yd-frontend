@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         frontend = "${WORKSPACE}"
-        docker_image = "authentication"
+        docker_image = "yaradata/frontend"
     }
 
     stages {
@@ -19,13 +19,8 @@ pipeline {
                 script {
                     
                     docker.withRegistry('', 'dockerHub-access' ) {
-                        def customImage = docker.build("yaradata/$docker_image:latest")
+                        def customImage = docker.build("$docker_image:latest")
                         customImage.push()
-
-                        // docker push yaradata/authentication:tagname
-
-                        // docker tag local-image:tagname new-repo:tagname
-                        // docker push new-repo:tagname
                     }
 
                 }
@@ -35,7 +30,7 @@ pipeline {
         stage('Kubernetes Deploy') {
             steps{
                 echo "deploy" 
-                sh "docker run -itd -p 4116:3000 --name frontend yaradata/$docker_image:latest"
+                sh "docker run -itd -p 4000:3000 --name frontend $docker_image:latest"
             }
         }
     }

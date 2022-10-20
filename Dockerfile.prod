@@ -1,0 +1,32 @@
+FROM node:alpine as builder
+
+WORKDIR /app
+
+ENV PATH /app/node_modules/.bin:$PATH
+ENV  CHOKIDAR_USEPOLLING=true
+
+COPY package.json ./
+
+# RUN npm install --silent
+# RUN npm install react-scripts@4.0.3 -g --silent
+RUN npm ci 
+
+
+COPY . .
+
+RUN npm run build
+# CMD ["npm", "start"]
+
+
+# Stage 2
+FROM nginx:alpine
+
+STOPSIGNAL SIGTERM
+
+EXPOSE 80 
+
+COPY --from=builder /app/build /usr/share/nginx/html
+
+CMD ["nginx-debug", "-g", "daemon off;"]
+
+# docker run -itd --rm --name front -v ${PWD}:/app -v /app/node_modules -p 3000:80 -e CHOKIDAR_USEPOLLING=true yd-frontend
